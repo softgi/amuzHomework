@@ -1,18 +1,16 @@
-import { Route, Routes, BrowserRouter } from "react-router-dom";
-import React, { useEffect, useState } from "react";
-import Home from "./app/Home";
-import Board from "./app/Board";
-import BoardDetail from "./app/BoardDetail";
+import { Route, Routes } from "react-router-dom";
+import React from "react";
+import Home from "./routes/Home";
+import Board from "./routes/Board";
+import BoardDetail from "./routes/BoardDetail";
 
 const App = () => {
     return (
-        <div className="App">
-            <Routes>
-                <Route exact path="/" element={<Home />}></Route>
-                <Route path="/board/:userId" element={<Board />}></Route>
-                <Route path="/boardDetail/:userID/:id" element={<BoardDetail />}></Route>
-            </Routes>
-        </div>
+        <Routes>
+            <Route exact="true" path="/" element={<Home />} />
+            <Route path="/board/:userId" element={<Board />} />
+            <Route path="/boardDetail/:userId/:id" element={<BoardDetail />} />
+        </Routes>
     );
 };
 
