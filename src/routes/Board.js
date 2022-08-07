@@ -1,20 +1,31 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { Link, NavLink, useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
-import { userListAtom } from "../atoms/userData";
-import ListView from "../component/ListView";
+import { boardListAtom, userListAtom } from "../atoms/userData";
 import TitleView from "../component/TitleView";
+import BoardListView from "../component/BoardListView";
+
+function classNames(...classes) {
+    return classes.filter(Boolean).join(" ");
+}
+
+const tabs = [
+    { name: "all", href: "#", current: true, filter: "all" },
+    { name: "completed", href: "#", current: false, filter: "true" },
+    { name: "incompleted", href: "#", current: false, filter: "false" },
+];
 
 const Board = () => {
     const [list, setList] = useState([]);
     let params = useParams();
-    const userIdx = Number(params.userId);
+    const boardIdx = Number(params.userId);
+    const boardList = useRecoilValue(boardListAtom);
     const userList = useRecoilValue(userListAtom);
-    const [checkText, setCheckText] = useState("");
+    const [checkText, setCheckText] = useState("all");
 
     useEffect(() => {
-        const pushList = userList.filter(function (e) {
-            return e.userId === userIdx;
+        const pushList = boardList.filter(function (e) {
+            return e.userId === boardIdx;
         });
         setList(pushList);
     }, []);
@@ -22,19 +33,19 @@ const Board = () => {
     const changeFilter = (completedText) => {
         const pushList = [];
         setCheckText(completedText);
-        userList.map((item, index) => {
+        boardList.map((item, index) => {
             if (completedText !== "all") {
                 if (completedText === "true") {
-                    if (userIdx === Number(item["userId"]) && item["completed"]) {
+                    if (boardIdx === Number(item["userId"]) && item["completed"]) {
                         pushList.push(item);
                     }
                 } else {
-                    if (userIdx === Number(item["userId"]) && !item["completed"]) {
+                    if (boardIdx === Number(item["userId"]) && !item["completed"]) {
                         pushList.push(item);
                     }
                 }
             } else {
-                if (userIdx === Number(item["userId"])) {
+                if (boardIdx === Number(item["userId"])) {
                     pushList.push(item);
                 }
             }
@@ -43,53 +54,64 @@ const Board = () => {
     };
 
     return (
-        <div
-            style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                backgroundColor: "pink",
-            }}
-        >
-            <TitleView userId={userIdx} name={"게시글 리스트"} list={list} />
-            <div>
-                <button
-                    disabled={checkText === "all" || checkText === ""}
-                    onClick={() => {
-                        changeFilter("all");
-                    }}
-                >
-                    all
-                </button>
-                <button
-                    disabled={checkText === "true"}
-                    onClick={() => {
-                        changeFilter("true");
-                    }}
-                >
-                    completed
-                </button>
-                <button
-                    disabled={checkText === "false"}
-                    onClick={() => {
-                        changeFilter("false");
-                    }}
-                >
-                    incompleted
-                </button>
+        <>
+            <TitleView userId={userList[boardIdx - 1].name} name={"BoardList"} list={list} />
+
+            <div
+                style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    padding: "24px",
+                }}
+            >
+                <div>
+                    <div className="pb-5 border-b border-gray-200 sm:pb-0">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">Selected</h3>
+                        <div className="mt-3 sm:mt-4">
+                            <div className="sm:hidden">
+                                <label htmlFor="current-tab" className="sr-only">
+                                    Select a tab
+                                </label>
+                                <select
+                                    id="current-tab"
+                                    name="current-tab"
+                                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                                    defaultValue={tabs.find((tab) => tab.current).name}
+                                >
+                                    {tabs.map((tab) => (
+                                        <option key={tab.name}>{tab.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="hidden sm:block">
+                                <nav className="-mb-px flex space-x-8">
+                                    {tabs.map((tab) => (
+                                        <div
+                                            key={tab.name}
+                                            onClick={() => changeFilter(tab.filter)}
+                                            className={classNames(
+                                                checkText === tab.filter
+                                                    ? "border-indigo-500 text-indigo-600"
+                                                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
+                                                "whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm"
+                                            )}
+                                            aria-current={tab.current ? "page" : undefined}
+                                        >
+                                            {tab.name}
+                                        </div>
+                                    ))}
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <BoardListView boardIdx={boardIdx} boardList={list} />
+                </div>
             </div>
-            {list.map((item, index) => {
-                return (
-                    <NavLink key={index} to={{ pathname: `/boardDetail/${userIdx}/${item.id}` }}>
-                        <ListView
-                            number={item.id - (Number(item.userId) - 1) * 20}
-                            contents={item.title}
-                        />
-                    </NavLink>
-                );
-            })}
-        </div>
+        </>
     );
 };
 

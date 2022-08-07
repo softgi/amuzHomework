@@ -1,49 +1,38 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
 import { useRecoilState } from "recoil";
-import { userListAtom } from "../atoms/userData";
-import ListView from "../component/ListView";
-import TitleView from "../component/TitleView";
+import { userListAtom, boardListAtom } from "../atoms/userData";
+import UserListView from "../component/UserListView";
 
 const Home = () => {
     const [filterList, setFilterList] = useState([]);
     const [userList, setUserList] = useRecoilState(userListAtom);
+    const [boardList, setBoardList] = useRecoilState(boardListAtom);
 
-    const getData = async () => {
-        const res = await fetch("https://jsonplaceholder.typicode.com/todos").then((res) =>
+    const getUserData = async () => {
+        const res = await fetch("https://jsonplaceholder.typicode.com/users").then((res) =>
             res.json()
         );
         setUserList(res);
-        const pushData = [];
+    };
 
-        res.filter((item1, i) => pushData.push(item1["userId"]));
-        const pushList = Array.from(new Set(pushData));
-        setFilterList(pushList);
+    const getBoardData = async () => {
+        const res = await fetch("https://jsonplaceholder.typicode.com/todos").then((res) =>
+            res.json()
+        );
+        setBoardList(res);
     };
 
     useEffect(() => {
-        getData();
+        getUserData();
+        getBoardData();
     }, []);
 
     return (
-        <div
-            style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                backgroundColor: "pink",
-            }}
-        >
-            <TitleView name={"유저 리스트"} list={filterList} />
-            {filterList.map((item, index) => {
-                return (
-                    <NavLink key={index} to={{ pathname: `/board/${item}` }}>
-                        <ListView contents={item} />
-                    </NavLink>
-                );
-            })}
-        </div>
+        <>
+            <div style={{ padding: "24px" }}>
+                <UserListView list={userList} />
+            </div>
+        </>
     );
 };
 

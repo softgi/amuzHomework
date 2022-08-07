@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useParams } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import { userListAtom } from "../atoms/userData";
+import { useRecoilValue, useRecoilState } from "recoil";
+import { boardCommentsListAtom, boardListAtom, userListAtom } from "../atoms/userData";
 import ListView from "../component/ListView";
 import TitleView from "../component/TitleView";
+import BoardDetailConponent from "../component/BoardDetailConponent";
+import BoardCommentView from "../component/BoardCommentView";
+import AddCommentConponent from "../component/AddCommentConponent";
 
 const BoardDetail = () => {
     const params = useParams();
@@ -11,15 +14,34 @@ const BoardDetail = () => {
     const boardId = params.id;
 
     const userList = useRecoilValue(userListAtom);
+    const boardList = useRecoilValue(boardListAtom);
+    const [comments, setComments] = useRecoilState(boardCommentsListAtom);
     const [nowDetail, setNowDetail] = useState();
     const [prevDetail, setPrevDetail] = useState("no-item");
     const [nextDetail, setNextDetail] = useState("no-item");
 
+    const getBoardComments = async () => {
+        let commentCheck = comments.filter((value) => value["postId"] === Number(boardId));
+        if (commentCheck.length === 0) {
+            const res = await fetch(
+                `https://jsonplaceholder.typicode.com/comments?postId=${boardId}`
+            ).then((res) => res.json());
+            setComments(res);
+        } else {
+            setComments(commentCheck);
+        }
+    };
+
     useEffect(() => {
-        const pushList = userList.filter(function (e) {
+        getBoardComments();
+    }, []);
+
+    useEffect(() => {
+        getBoardComments();
+        const pushList = boardList.filter(function (e) {
             return e.userId === Number(userId);
         });
-        const nowList = userList.filter(function (e) {
+        const nowList = boardList.filter(function (e) {
             return e.id === Number(boardId);
         });
         const prevList = pushList.filter(function (e) {
@@ -43,32 +65,54 @@ const BoardDetail = () => {
     }, [params]);
 
     return (
-        <div
-            style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                backgroundColor: "pink",
-            }}
-        >
-            <TitleView name={`${userId}씨의 ${boardId - (Number(userId) - 1) * 20}번 게시글`} />
-            <ListView type={"detail"} contents={nowDetail} />
-            {prevDetail !== "no-item" && (
-                <div>
-                    <NavLink to={{ pathname: `/boardDetail/${userId}/${Number(boardId) - 1}` }}>
-                        <ListView type="prev" contents={prevDetail} />
-                    </NavLink>
+        <>
+            <TitleView />
+            <div style={{ padding: "24px" }}>
+                <div
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                    }}
+                >
+                    <BoardDetailConponent
+                        title={`${userList[userId - 1].name}'s number ${
+                            boardId - (Number(userId) - 1) * 20
+                        } board`}
+                        content={nowDetail}
+                    />
                 </div>
-            )}
-            <div>
-                {nextDetail !== "no-item" && (
-                    <NavLink to={{ pathname: `/boardDetail/${userId}/${Number(boardId) + 1}` }}>
-                        <ListView type="next" contents={nextDetail} />
-                    </NavLink>
+                <AddCommentConponent />
+                {comments.length !== 0 ? (
+                    <BoardCommentView commentList={comments} />
+                ) : (
+                    <div style={{ width: "100%" }}>
+                        <div style={{ width: "150px", margin: "auto" }}>댓글이 없습니다.</div>
+                    </div>
                 )}
+                <div style={{ width: "100%", display: "flex", flexDirection: "row" }}>
+                    {prevDetail !== "no-item" && (
+                        <div style={{ width: "50%" }}>
+                            <NavLink
+                                to={{ pathname: `/boardDetail/${userId}/${Number(boardId) - 1}` }}
+                            >
+                                <ListView type="prev" contents={prevDetail} />
+                            </NavLink>
+                        </div>
+                    )}
+                    <div style={{ width: "50%" }}>
+                        {nextDetail !== "no-item" && (
+                            <NavLink
+                                to={{ pathname: `/boardDetail/${userId}/${Number(boardId) + 1}` }}
+                            >
+                                <ListView type="next" contents={nextDetail} />
+                            </NavLink>
+                        )}
+                    </div>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

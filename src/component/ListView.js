@@ -20,13 +20,23 @@ const ListView = (props) => {
                     </div>
                 ) : (
                     <>
-                        {props.type === "prev" && <div>이전 글</div>}
-                        {props.type === "next" && <div>다음 글</div>}
+                        {props.type === "prev" && (
+                            <div style={{ width: "30%", backgroundColor: "gray", color: "white" }}>
+                                이전 글
+                            </div>
+                        )}
+                        {props.type === "next" && (
+                            <div style={{ width: "30%", backgroundColor: "gray", color: "white" }}>
+                                다음 글
+                            </div>
+                        )}
 
                         <button
                             style={{
                                 width: "30%",
-                                minHeight: "50px",
+                                minHeight: "120px",
+                                borderStyle: "solid",
+                                borderWidth: "1px",
                             }}
                         >
                             {props.contents}
