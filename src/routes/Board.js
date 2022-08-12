@@ -4,6 +4,7 @@ import { useRecoilValue } from "recoil";
 import { boardListAtom, userListAtom } from "../atoms/userData";
 import TitleView from "../component/TitleView";
 import BoardListView from "../component/BoardListView";
+import {ReadBoard} from "../model/model";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -20,6 +21,7 @@ const Board = () => {
     let params = useParams();
     const boardIdx = Number(params.userId);
     const boardList = useRecoilValue(boardListAtom);
+    const boardList2 = ReadBoard(boardIdx);
     const userList = useRecoilValue(userListAtom);
     const [checkText, setCheckText] = useState("all");
 
@@ -27,27 +29,25 @@ const Board = () => {
         const pushList = boardList.filter(function (e) {
             return e.userId === boardIdx;
         });
-        setList(pushList);
+        setList(boardList2);
     }, []);
 
     const changeFilter = (completedText) => {
         const pushList = [];
         setCheckText(completedText);
-        boardList.map((item, index) => {
+        boardList2.map((item, index) => {
             if (completedText !== "all") {
                 if (completedText === "true") {
-                    if (boardIdx === Number(item["userId"]) && item["completed"]) {
+                    if (item.completed) {
                         pushList.push(item);
                     }
                 } else {
-                    if (boardIdx === Number(item["userId"]) && !item["completed"]) {
+                    if ( !item.completed) {
                         pushList.push(item);
                     }
                 }
             } else {
-                if (boardIdx === Number(item["userId"])) {
                     pushList.push(item);
-                }
             }
         });
         setList(pushList);

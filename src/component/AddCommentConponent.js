@@ -10,6 +10,8 @@ import {
 } from "@heroicons/react/solid";
 import { Listbox, Transition } from "@headlessui/react";
 import peopleImage from "../image/people.png";
+import {useRecoilState} from "recoil";
+import {boardCommentsListAtom} from "../atoms/userData";
 
 const moods = [
     {
@@ -60,8 +62,24 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-export default function AddCommentConponent() {
+export default function AddCommentConponent(props) {
+    const [comments, setComments] = useRecoilState(boardCommentsListAtom);
     const [selected, setSelected] = useState(moods[5]);
+    const [commentNote, setCommentNote] = useState("")
+    const name = props.name;
+    const boardId = props.boardId;
+
+    const AddComment = () =>{
+        let list = [...comments , {
+            "postId" : Number(boardId),
+                "id": comments[comments.length-1]["id"] +1,
+                "name" : name,
+                "email": "",
+                "body" : commentNote
+        }];
+        setComments(list);
+        setCommentNote("");
+    }
 
     return (
         <div className="flex items-start space-x-4">
@@ -69,18 +87,21 @@ export default function AddCommentConponent() {
                 <img className="inline-block h-10 w-10 rounded-full" src={peopleImage} alt="" />
             </div>
             <div className="min-w-0 flex-1">
-                <form action="#" className="relative">
+                <div className="relative">
                     <div className="border border-gray-300 rounded-lg shadow-sm overflow-hidden focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
                         <label htmlFor="comment" className="sr-only">
                             Add your comment
                         </label>
                         <textarea
                             rows={3}
-                            name="comment"
+                            name="commentName"
                             id="comment"
                             className="block w-full py-3 border-0 resize-none focus:ring-0 sm:text-sm"
                             placeholder="Add your comment..."
-                            defaultValue={""}
+                            value={commentNote}
+                            onChange={(e)=>{
+                                setCommentNote(e.target.value)
+                            }}
                         />
 
                         {/* Spacer element to match the height of the toolbar */}
@@ -196,14 +217,16 @@ export default function AddCommentConponent() {
                         </div>
                         <div className="flex-shrink-0">
                             <button
-                                type="submit"
+                                onClick={()=>{
+                                    AddComment();
+                                }}
                                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 Post
                             </button>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );

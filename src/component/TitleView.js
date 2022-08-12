@@ -13,7 +13,7 @@ export const TitleView = (props) => {
                             <div>home</div>
                         </NavLink>
                     </div>
-                    <div style={{ margin: " auto", height: "100px", padding: "0px 24px" }}>
+                    <div style={{ margin: " auto", padding: "0px 24px" }}>
                         <div style={{ fontSize: "40px" }}>
                             {props.userId !== undefined && `${props.userId}'s`} {props.name}
                         </div>

@@ -16,25 +16,28 @@ const BoardDetail = () => {
     const userList = useRecoilValue(userListAtom);
     const boardList = useRecoilValue(boardListAtom);
     const [comments, setComments] = useRecoilState(boardCommentsListAtom);
+    const [commentList, setCommentList]= useState([]);
     const [nowDetail, setNowDetail] = useState();
     const [prevDetail, setPrevDetail] = useState("no-item");
     const [nextDetail, setNextDetail] = useState("no-item");
 
     const getBoardComments = async () => {
-        let commentCheck = comments.filter((value) => value["postId"] === Number(boardId));
-        if (commentCheck.length === 0) {
+        if (comments.length === 0) {
             const res = await fetch(
-                `https://jsonplaceholder.typicode.com/comments?postId=${boardId}`
+                `https://jsonplaceholder.typicode.com/comments`
             ).then((res) => res.json());
+            let commentCheck = res.filter((value) => value["postId"] === Number(boardId))
             setComments(res);
+            setCommentList(commentCheck);
         } else {
-            setComments(commentCheck);
+            let commentCheck = comments.filter((value) => value["postId"] === Number(boardId));
+            setCommentList(commentCheck);
         }
     };
 
     useEffect(() => {
         getBoardComments();
-    }, []);
+    }, [comments]);
 
     useEffect(() => {
         getBoardComments();
@@ -83,9 +86,9 @@ const BoardDetail = () => {
                         content={nowDetail}
                     />
                 </div>
-                <AddCommentConponent />
-                {comments.length !== 0 ? (
-                    <BoardCommentView commentList={comments} />
+                <AddCommentConponent name={userList[userId - 1].name} boardId={boardId} />
+                {commentList.length !== 0 ? (
+                    <BoardCommentView name={userList[userId - 1].name} boardId={boardId} commentList={commentList} />
                 ) : (
                     <div style={{ width: "100%" }}>
                         <div style={{ width: "150px", margin: "auto" }}>댓글이 없습니다.</div>
