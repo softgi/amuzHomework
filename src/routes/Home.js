@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 import { userListAtom, boardListAtom } from "../atoms/userData";
 import UserListView from "../component/UserListView";
-import {CreateBoard, CreateUser, ReadBoard, ReadUser} from "../model/model";
+import {commentPostsSelector, CreateBoard, CreateUser, ReadBoard, ReadUser} from "../model/model";
 
 const Home = () => {
     const [filterList, setFilterList] = useState([]);
@@ -42,15 +42,8 @@ const Home = () => {
     }, []);
 
     useEffect(()=>{
-        const userData = ReadUser();
-        const boardData = ReadBoard();
-        if(userData.length === 0) {
-            saveUserDB();
-        }
-        if(boardData.length === 0){
-            saveBoardDB();
-        }
-        console.log(Comment)
+        saveUserDB();
+        saveBoardDB();
     },[userList, boardList])
 
     return (

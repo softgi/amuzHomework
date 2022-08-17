@@ -1,18 +1,40 @@
-import {Model, ORM, fk, attr} from "redux-orm";
+import {Model, ORM, fk, attr, createSelector, many} from "redux-orm";
 import { createStore, combineReducers } from "redux";
 import { createReducer } from "redux-orm";
 
 class User extends Model {}
 User.modelName = 'User';
 
-class Board extends Model {}
+export class Board extends Model {}
 Board.modelName = 'Board';
+Board.fields = {
+    id : attr('Id', 'boards'),
+    userId: attr(),
+    title : attr(),
+    completed: attr()
+}
 
 export class Comment extends Model {}
 Comment.modelName = 'Comment';
+Comment.fields={
+    boardId : many({
+        to: 'Board',
+        as: 'boards',
+        relatedName: 'comments',
+    }),
+    id : attr(),
+    name : attr(),
+    body: attr()
+}
+
+export class Post extends Model {}
+Post.modelName = 'Post';
+Post.fields={
+    id : fk('Id', )
+}
 
 export const orm = new ORM;
-orm.register(User, Board);
+orm.register(User, Board, Comment);
 
 const rootReducer = combineReducers({
     orm: createReducer(orm), // This will be the Redux-ORM state.
@@ -32,7 +54,7 @@ export function ReadUser(){
 }
 
 export function CreateUser(id, name, company) {
-    session.User.create({
+    session.User.upsert({
         id: id,
         name: name,
         company : company
@@ -42,9 +64,18 @@ export function CreateUser(id, name, company) {
 export function ReadBoard(userId, completed) {
     let board;
     if(userId){
-        board = session.Board.all().filter(
-            item => item.userId === Number(userId)
-        ).toModelArray();
+        if(completed){
+            board = session.Board.all().filter(
+                item => (
+                    item.userId === Number(userId) &&
+                    `${item.completed}` === completed
+                )
+            ).toModelArray();
+        }else {
+            board = session.Board.all().filter(
+                item => item.userId === Number(userId)
+            ).toModelArray();
+        }
     }else{
         board = session.Board.all().toModelArray();
     }
@@ -57,7 +88,7 @@ export function ReadBoard(userId, completed) {
 }
 
 export function CreateBoard(id, userId, title, completed) {
-    session.Board.create({
+    session.Board.upsert({
         id : id,
         userId : userId,
         title : title,
@@ -65,8 +96,16 @@ export function CreateBoard(id, userId, title, completed) {
     })
 }
 
-export function ReadComment() {
-    let comment = session.Comment.all().toModelArray();
+export function ReadComment(boardId) {
+    let comment;
+    if(boardId){
+        comment = session.Comment.all().filter(
+            item => item.postId === Number(boardId)
+        ).toModelArray();
+    }else {
+        comment = session.Comment.all().toModelArray();
+    }
+
     let commentList = [];
     comment.map((item)=>{
         commentList.push(item._fields);
@@ -75,7 +114,7 @@ export function ReadComment() {
 }
 
 export function CreateComment(id, postId, name, email, body) {
-    session.Comment.create({
+    session.Comment.upsert({
         id : id,
         postId : postId,
         name : name,
@@ -84,6 +123,26 @@ export function CreateComment(id, postId, name, email, body) {
     })
 }
 
+
 export function DeleteComment(id){
-    session.Comment.all().filter().orderBy()
+    let comm = session.Comment.withId(id);
+    comm?.delete();
 }
+
+export function UpdateComment(id, body){
+    let comm = session.Comment.withId(id);
+    comm?.update({body: body});
+}
+
+// export const commentPostsSelector = createSelector(
+//     [Board, Comment.comments],
+//     (board, posts) => {
+//         if (!posts) return [];
+//         return posts.map((post) => ({
+//             board: board.id,
+//             id: post.id,
+//             name: post.name,
+//             body: post.body
+//         }));
+//     }
+// );

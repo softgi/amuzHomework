@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import peopleImage from "../image/people.png";
 import {useRecoilState} from "recoil";
 import {boardCommentsListAtom} from "../atoms/userData";
+import {DeleteComment, ReadComment, UpdateComment} from "../model/model";
 
 export default function BoardCommentView(props) {
     const people = props.commentList;
@@ -21,11 +22,15 @@ export default function BoardCommentView(props) {
         setCommentNum(people.length);
     };
 
-    const DeleteComment = (e) => {
-        let list = comments;
-        const target = list.filter((value)=>value["id"] !== e["id"])
-        setComments(target);
-        console.log(target);
+    const DeleteComments = (e) => {
+        // let list = comments;
+        // const target = list.filter((value)=>value["id"] !== e["id"])
+        // setComments(target);
+        // console.log(target);
+
+        DeleteComment(e.id);
+        const aa = ReadComment(e.postId)
+        console.log(aa)
     }
 
     const EditComment = (e) =>{
@@ -80,11 +85,11 @@ export default function BoardCommentView(props) {
                                                     style={{borderStyle:"solid", borderWidth:"1px"}} />
                                             }
                                         </div>
-                                        {name === person.name && <div>
+                                        {name !== person.name && <div>
                                             {(!editMode || person.id !== editNum) && <>
                                                 <button
                                                     onClick={() => {
-                                                        DeleteComment(person);
+                                                        DeleteComments(person);
                                                     }}
                                                     className="inline-flex items-center shadow-sm px-2.5 py-0.5 border border-gray-300 text-sm leading-5 font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50">
                                                     Delete

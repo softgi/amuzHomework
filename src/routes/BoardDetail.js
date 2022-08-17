@@ -7,6 +7,7 @@ import TitleView from "../component/TitleView";
 import BoardDetailConponent from "../component/BoardDetailConponent";
 import BoardCommentView from "../component/BoardCommentView";
 import AddCommentConponent from "../component/AddCommentConponent";
+import {boards, CreateComment, DeleteComment, ReadComment} from "../model/model";
 
 const BoardDetail = () => {
     const params = useParams();
@@ -29,11 +30,19 @@ const BoardDetail = () => {
             let commentCheck = res.filter((value) => value["postId"] === Number(boardId))
             setComments(res);
             setCommentList(commentCheck);
+            saveComment(res);
         } else {
             let commentCheck = comments.filter((value) => value["postId"] === Number(boardId));
             setCommentList(commentCheck);
         }
     };
+
+    const saveComment = (res) => {
+        res.map((item)=>{
+            CreateComment(item.id, item.postId, item.name, item.email, item.body)
+        })
+    }
+
 
     useEffect(() => {
         getBoardComments();

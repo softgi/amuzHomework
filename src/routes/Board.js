@@ -17,40 +17,28 @@ const tabs = [
 ];
 
 const Board = () => {
-    const [list, setList] = useState([]);
     let params = useParams();
     const boardIdx = Number(params.userId);
     const boardList = useRecoilValue(boardListAtom);
     const boardList2 = ReadBoard(boardIdx);
     const userList = useRecoilValue(userListAtom);
+    const [list, setList] = useState(boardList2);
     const [checkText, setCheckText] = useState("all");
 
     useEffect(() => {
-        const pushList = boardList.filter(function (e) {
-            return e.userId === boardIdx;
-        });
-        setList(boardList2);
     }, []);
 
     const changeFilter = (completedText) => {
         const pushList = [];
         setCheckText(completedText);
-        boardList2.map((item, index) => {
-            if (completedText !== "all") {
-                if (completedText === "true") {
-                    if (item.completed) {
-                        pushList.push(item);
-                    }
-                } else {
-                    if ( !item.completed) {
-                        pushList.push(item);
-                    }
-                }
-            } else {
-                    pushList.push(item);
-            }
-        });
-        setList(pushList);
+        if(completedText === "all"){
+            const board = ReadBoard(boardIdx);
+            setList(board)
+        }else{
+            const board = ReadBoard(boardIdx, completedText);
+            setList(board);
+        }
+
     };
 
     return (
@@ -80,7 +68,7 @@ const Board = () => {
                                     className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                                     defaultValue={tabs.find((tab) => tab.current).name}
                                 >
-                                    {tabs.map((tab) => (
+                                    {tabs.map((tab, index) => (
                                         <option key={tab.name}>{tab.name}</option>
                                     ))}
                                 </select>
